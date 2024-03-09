@@ -1,33 +1,29 @@
 {
   "name": "cute-noise",
-  "version": "0.0.0",
-  "description": "Experimental piercer stronghold.",
-  "type": "module",
-  "module": "src/index.esm.js",
-  "main": "src/index.cjs.js",
+  "version": "0.0.1",
+  "description": "Experimental.",
+  "source": "src/test.js",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.js",
+  "browser": "dist/bundle.js",
   "scripts": {
-    "test": "node ./src/test.js",
-    "prepublishOnly": "npm run build && npx shx cp docs/readme.md readme.md",
-    "build": "npx rollup --config src/rollup.config.js",
-    "postpublish": "npx shx rm src/index.esm.js && npx shx rm src/index.cjs.js && npx shx rm readme.md"
+    "build": "webpack --mode production",
+    "start": "webpack serve --open --mode development"
   },
   "files": [
-    "src/index.esm.js",
-    "src/index.cjs.js",
-    "src/index.js"
+    "src",
+    "dist"
   ],
   "author": "planetrenox",
   "license": "CC-BY-4.0",
   "homepage": "https://planetrenox.github.io/cute-meddler",
   "repository": "git+https://github.com/planetrenox/cute-meddler.git",
   "funding": "https://bit.ly/incessant-vibration",
-  "keywords": [
-    ""
-  ],
+  "keywords": [],
   "dependencies": {
     "cute-con": "latest"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3"
+    "uniport": "latest"
   }
 }
