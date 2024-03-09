@@ -1,4 +1,5 @@
 import { bitmeddler } from './bitmeddler.js';
+import { _ } from 'cute-con';
 
 const bitMeddlerImage = {
     replaceWithCanvas(imageId)
@@ -13,8 +14,13 @@ const bitMeddlerImage = {
         canvas.width = image.width;
         canvas.height = image.height;
         canvas.id = `${imageId}-canvas`;
-
+        const context2D = _(canvas.getContext('2d'));
+        context2D.drawImage(image, 0, 0);
         image.parentNode.replaceChild(canvas, image);
+
+        // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // bitMeddlerEffects[effect](imageData);
+        // ctx.putImageData(imageData, 0, 0);
 
         return canvas;
     },
@@ -24,11 +30,11 @@ const bitMeddlerImage = {
         const ctx = canvas.getContext('2d');
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const pixelData = imageData.data;
-        const meddle = new bitmeddler(pixelData.length, options.seed);
+        const meddle = _(new bitmeddler(pixelData.length));
 
         const animationLoop = () =>
         {
-            const scrambledIndexes = meddle.next();
+            const scrambledIndexes = _(meddle.next());
 
             for (let i = 0; i < pixelData.length; i += 4) {
                 const offset = scrambledIndexes * 4;
@@ -89,7 +95,23 @@ const bitMeddlerImage = {
         canvas.stopAnimation = false;
     },
 
-    // Add more utility functions here
 };
 
-export default bitMeddlerImage;
+// Replace an image with a canvas
+const canvas = bitMeddlerImage.replaceWithCanvas('showcase');
+//const canvas2 = bitMeddlerImage.replaceWithCanvas('showcase2');
+//const canvas3 = bitMeddlerImage.replaceWithCanvas('showcase3');
+//const canvas4 = bitMeddlerImage.replaceWithCanvas('showcase4');
+
+// Apply the scramble pixels effect to the canvas
+//bitMeddlerImage.scramblePixels(canvas);
+
+// Apply the glitch effect to the canvas
+//bitMeddlerImage.glitchEffect(canvas2);
+
+// Stop the animation on the canvas
+//bitMeddlerImage.stopAnimation(canvas3);
+
+// Reset the animation on the canvas
+//bitMeddlerImage.resetAnimation(canvas4);
+
