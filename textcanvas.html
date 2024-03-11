@@ -1,33 +1,43 @@
+<script src="https://cdn.jsdelivr.net/npm/piercer-error"></script>
 <body>
   <canvas id="idd"></canvas>
 </body>
 <script>
   function applyNoiseToText(canvasId, text) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return; // Ensure canvas exists
     const ctx = canvas.getContext('2d');
     canvas.width = 400;
     canvas.height = 200;
 
-    ctx.fillStyle = 'black'; // Set a background color if needed
-    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background
-    ctx.font = '48px serif';
-    ctx.fillStyle = 'white'; // Ensure text color contrasts with background
-    ctx.fillText(text, 10, 100);
+    // Set background to white
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw black text
+    ctx.font = '48px serif';
+    ctx.fillStyle = 'black';
+    ctx.fillText(text, 10, 50);
+
+    // Retrieve the image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
+    // Apply a noise effect
     for (let i = 0; i < data.length; i += 4) {
-      const noise = 25 - Math.random() * 50;
-      data[i] += noise; // red
-      data[i + 1] += noise; // green
-      data[i + 2] += noise; // blue
+      // Generate random noise
+      const noise = Math.random() * 50;
+
+      // Apply the noise
+      data[i] -= noise;     // red
+      data[i + 1] -= noise; // green
+      data[i + 2] -= noise; // blue
+      // Alpha channel (i + 3) is left unchanged
     }
 
+    // Update the canvas with the modified pixels
     ctx.putImageData(imageData, 0, 0);
   }
 
-  // Usage
-  window.onload = () => applyNoiseToText('idd', 'Your Text Here');
+  // Ensure the script runs after the DOM has fully loaded
+  window.addEventListener('load', () => applyNoiseToText('idd', 'Your Text Here'));
 </script>
