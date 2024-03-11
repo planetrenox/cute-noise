@@ -1,13 +1,13 @@
 <script src="https://cdn.jsdelivr.net/npm/piercer-error"></script>
 <body>
   <p class="txx">This is text in a p tag but our function should work with any text inside any tag with this class</p>
-  
+  <!-- ... more elements ... -->
 </body>
 <script>
- var applyN = function applyN(canvas) {
-    const canvas = document.getElementById(canvasId);
+  function applyN(canvas) {
     const ctx = canvas.getContext('2d');
 
+    // Set background to transparent by not drawing it
 
     // Retrieve the image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -29,75 +29,59 @@
     ctx.putImageData(imageData, 0, 0);
   }
 </script>
+<script>
+  var textPixels = [];
+  var edgePixels = [];
+  
+  function detect(canvas) {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
 
+    // Your logic to detect text pixels and edge pixels
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 0 && data[i + 3] < 255) {
+        edgePixels.push(i);
+      } else if (data[i + 3] === 255) {
+        textPixels.push(i);
+      }
+    }
 
+    // Here you can call applyN or any other function to manipulate those pixels
+  }
+</script>
 <script>
   function convertTextToCanvas(textElement) {
-    // Create a new canvas element
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-
-    // Get computed styles of the text element
     var style = window.getComputedStyle(textElement);
-
-    // Set canvas font to match text element's font
     var fontSize = style.getPropertyValue('font-size');
     var fontFamily = style.getPropertyValue('font-family');
-    ctx.font = `${fontSize} ${fontFamily}`;
 
-    // Set the canvas size to match the text element size
+    ctx.font = `${fontSize} ${fontFamily}`;
     canvas.width = textElement.offsetWidth;
     canvas.height = textElement.offsetHeight;
 
-    // Optional: handle additional styles like font-weight, font-style, color, etc.
-
-    // Set background to transparent
-    // Draw the text onto the canvas
     ctx.textBaseline = 'top';
     ctx.fillStyle = style.getPropertyValue('color');
     ctx.fillText(textElement.textContent, 0, 0);
+
+    // Now we have the text on the canvas, we can detect and store the text pixels
+    detect(canvas);
+
+    // Then apply the noise to those pixels
+    applyN(canvas);
 
     return canvas;
   }
 
   function replaceTextWithCanvas() {
-    // Find all elements with the 'txx' class
     var textElements = document.querySelectorAll('.txx');
-
-    // Iterate over the NodeList
     textElements.forEach(function(element) {
       var canvas = convertTextToCanvas(element);
-
-      // Replace the text element with the canvas
       element.parentNode.replaceChild(canvas, element);
-      detect(canvas);
     });
   }
 
-  // Run the replacement after the DOM is fully loaded
   window.addEventListener('load', replaceTextWithCanvas);
-</script>
-<script>
-  // Global variables to store pixel data
-  var textPixels = [];
-  var edgePixels = [];
-  
-  // Your logic to detect text pixels and edge pixels
-  var detect = function detectTextPixels(canvas, ctx) {
-    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var data = imageData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] > 0) { // If pixel is not completely transparent
-        if (data[i + 3] === 255) {
-          textPixels.push(i); // Fully opaque pixel is part of text
-        } else {
-          edgePixels.push(i); // Partially opaque pixel is likely an edge due to anti-aliasing
-        }
-      }
-    }
-    
-  }
-
-
 </script>
