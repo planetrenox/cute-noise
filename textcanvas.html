@@ -3,7 +3,7 @@
   <p class="txx">This is text in a p tag but our function should work with any text inside any tag with this class</p>
   <!-- ... more elements ... -->
 </body>
-<script type='module'>
+<script>
   var applyN=function applyN1(canvas) {
     const ctx = canvas.getContext('2d');
 
@@ -29,8 +29,7 @@
     ctx.putImageData(imageData, 0, 0);
   }
 </script>
-<script type='module'>
-  import {$, html} from 'https://cdn.jsdelivr.net/npm/cute-html/+esm';
+<script>
   var textPixels = [];
   var edgePixels = [];
   
@@ -45,14 +44,13 @@
         edgePixels.push(i);
       } else if (data[i + 3] === 255) {
         textPixels.push(i);
-        $('body').inject(html`${i + ' '}`);
       }
     }
 
     // Here you can call applyN or any other function to manipulate those pixels
   }
 </script>
-<script type='module'>
+<script>
   function convertTextToCanvas(textElement) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
