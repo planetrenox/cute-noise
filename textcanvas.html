@@ -4,20 +4,10 @@
   
 </body>
 <script>
- var applyN = function applyNoiseToText(canvasId, text) {
+ var applyN = function applyN(canvas) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
-    canvas.width = 400;
-    canvas.height = 200;
 
-    // Set background to white
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw black text
-    ctx.font = '48px serif';
-    ctx.fillStyle = 'black';
-    ctx.fillText(text, 10, 50);
 
     // Retrieve the image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -42,10 +32,6 @@
 
 
 <script>
-  // Variables to store pixel data globally
-  var textPixels = [];
-  var edgePixels = [];
-
   function convertTextToCanvas(textElement) {
     // Create a new canvas element
     var canvas = document.createElement('canvas');
@@ -84,6 +70,7 @@
 
       // Replace the text element with the canvas
       element.parentNode.replaceChild(canvas, element);
+      detect(canvas);
     });
   }
 
@@ -91,7 +78,26 @@
   window.addEventListener('load', replaceTextWithCanvas);
 </script>
 <script>
-  // Detect and store the text and edge pixels
-  // This part would include the pixel detection and storage logic
-  // ...
+  // Global variables to store pixel data
+  var textPixels = [];
+  var edgePixels = [];
+  
+  // Your logic to detect text pixels and edge pixels
+  var detect = function detectTextPixels(canvas, ctx) {
+    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 0) { // If pixel is not completely transparent
+        if (data[i + 3] === 255) {
+          textPixels.push(i); // Fully opaque pixel is part of text
+        } else {
+          edgePixels.push(i); // Partially opaque pixel is likely an edge due to anti-aliasing
+        }
+      }
+    }
+    
+  }
+
+
 </script>
