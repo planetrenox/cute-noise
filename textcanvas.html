@@ -4,7 +4,7 @@
   <!-- ... more elements ... -->
 </body>
 <script>
-  function applyN(canvas) {
+  var applyN=function applyN1(canvas) {
     const ctx = canvas.getContext('2d');
 
     // Set background to transparent by not drawing it
@@ -34,7 +34,7 @@
   var textPixels = [];
   var edgePixels = [];
   
-  function detect(canvas) {
+  var detect= function detect1(canvas) {
     const ctx = canvas.getContext('2d');
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
