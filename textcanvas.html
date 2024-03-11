@@ -3,7 +3,7 @@
   <p class="txx">This is text in a p tag but our function should work with any text inside any tag with this class</p>
   <!-- ... more elements ... -->
 </body>
-<script>
+<script type='module'>
   var applyN=function applyN1(canvas) {
     const ctx = canvas.getContext('2d');
 
@@ -52,7 +52,7 @@
     // Here you can call applyN or any other function to manipulate those pixels
   }
 </script>
-<script>
+<script type='module'>
   function convertTextToCanvas(textElement) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -84,6 +84,6 @@
       element.parentNode.replaceChild(canvas, element);
     });
   }
-
-  window.addEventListener('load', replaceTextWithCanvas);
+  replaceTextWithCanvas();
+ // window.addEventListener('load', replaceTextWithCanvas);
 </script>
