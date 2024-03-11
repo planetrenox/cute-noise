@@ -1,9 +1,10 @@
 <script src="https://cdn.jsdelivr.net/npm/piercer-error"></script>
 <body>
-  <canvas id="idd"></canvas>
+  <p class="txx">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <!-- ... more elements ... -->
 </body>
 <script>
-  function applyNoiseToText(canvasId, text) {
+ var applyN = function applyNoiseToText(canvasId, text) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
     canvas.width = 400;
@@ -37,7 +38,60 @@
     // Update the canvas with the modified pixels
     ctx.putImageData(imageData, 0, 0);
   }
+</script>
 
-  // Ensure the script runs after the DOM has fully loaded
-  window.addEventListener('load', () => applyNoiseToText('idd', 'Your Text Here'));
+
+<script>
+  // Variables to store pixel data globally
+  var textPixels = [];
+  var edgePixels = [];
+
+  function convertTextToCanvas(textElement) {
+    // Create a new canvas element
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    // Get computed styles of the text element
+    var style = window.getComputedStyle(textElement);
+
+    // Set canvas font to match text element's font
+    var fontSize = style.getPropertyValue('font-size');
+    var fontFamily = style.getPropertyValue('font-family');
+    ctx.font = `${fontSize} ${fontFamily}`;
+
+    // Set the canvas size to match the text element size
+    canvas.width = textElement.offsetWidth;
+    canvas.height = textElement.offsetHeight;
+
+    // Optional: handle additional styles like font-weight, font-style, color, etc.
+
+    // Set background to transparent
+    // Draw the text onto the canvas
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = style.getPropertyValue('color');
+    ctx.fillText(textElement.textContent, 0, 0);
+
+    return canvas;
+  }
+
+  function replaceTextWithCanvas() {
+    // Find all elements with the 'txx' class
+    var textElements = document.querySelectorAll('.txx');
+
+    // Iterate over the NodeList
+    textElements.forEach(function(element) {
+      var canvas = convertTextToCanvas(element);
+
+      // Replace the text element with the canvas
+      element.parentNode.replaceChild(canvas, element);
+    });
+  }
+
+  // Run the replacement after the DOM is fully loaded
+  window.addEventListener('load', replaceTextWithCanvas);
+</script>
+<script>
+  // Detect and store the text and edge pixels
+  // This part would include the pixel detection and storage logic
+  // ...
 </script>
