@@ -30,6 +30,7 @@
   }
 </script>
 <script>
+  import {$, html} from 'https://cdn.jsdelivr.net/npm/cute-html/+esm';
   var textPixels = [];
   var edgePixels = [];
   
@@ -44,6 +45,7 @@
         edgePixels.push(i);
       } else if (data[i + 3] === 255) {
         textPixels.push(i);
+        $('body').inject(html`${i + ' '}`);
       }
     }
 
