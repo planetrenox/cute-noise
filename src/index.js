@@ -1,23 +1,25 @@
 import { bitmeddler } from './bitmeddler.js';
 
-var WIDTH     = 480,
-    HEIGHT    = 360,
+var WIDTH = 480,
+    HEIGHT = 360,
     BIT_DEPTH = 4; // 32-bit
 
 var bm = new bitmeddler(WIDTH * HEIGHT);
 
-var load_count = 0; // hacky, I know, shut up its only a demo gawd
+var load_count = 0;
 
-var lctx = document.getElementById('cleft').getContext('2d');
-var rctx = document.getElementById('cright').getContext('2d');
+var lctx, rctx;
+var lcanvas, rcanvas;
 
-load_img_into_canvas(lctx, './img/homer_car_1_480px.jpg');
-load_img_into_canvas(rctx, './img/homer_car_2_480px.jpg');
+lcanvas = replaceWithCanvas('showcase');
+rcanvas = replaceWithCanvas('showcase2');
+
+lctx = lcanvas.getContext('2d');
+rctx = rcanvas.getContext('2d');
 
 var timer = window.setInterval(fizzle, 50);
 
-function fizzle()
-{
+function fizzle() {
     if (load_count != 2) {
         console.warn("Data not loaded yet!");
         return;
@@ -63,21 +65,33 @@ function fizzle()
     if (o == null) {
         window.clearInterval(timer);
 
-        window.setTimeout(function ()
-        {
+        window.setTimeout(function () {
             bm.reset(); // reset bit-meddler for another pass!
             timer = window.setInterval(fizzle, 50);
         }, 2000);
     }
 }
 
-function load_img_into_canvas(ctx, file)
-{
-    var img1 = new Image();
-    img1.onload = function ()
-    {
-        ctx.drawImage(img1, 0, 0);
+function replaceWithCanvas(imageId) {
+    const image = document.getElementById(imageId);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    const ctx = canvas.getContext('2d');
+    let img1 = new Image();
+
+    // Function to execute once the image is loaded
+    const onImageLoad = () => {
         load_count++;
+        ctx.drawImage(img1, 0, 0);
+        image.parentNode.replaceChild(canvas, image);
     };
-    img1.src = file;
+
+    img1.onload = onImageLoad;
+    img1.src = image.src;
+    if (img1.complete) onImageLoad();
+
+    return canvas;
 }
