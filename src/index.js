@@ -1,97 +1,85 @@
 import { bitmeddler } from './bitmeddler.js';
-
-var WIDTH = 480,
-    HEIGHT = 360,
-    BIT_DEPTH = 4; // 32-bit
-
-var bm = new bitmeddler(WIDTH * HEIGHT);
+import { _ } from 'cute-con'; // console.log with return value
 
 var load_count = 0;
+const BIT_DEPTH = 4; // Assuming RGBA - 4 bytes per pixel
+var fizzleRate = 2000; // Number of pixels to manipulate per interval
+var fizzleInterval = 50; // Time (ms) between fizzle effects
+var resetTimeout = 2000; // Time (ms) before resetting the effect
 
-var lctx, rctx;
-var lcanvas, rcanvas;
-
-lcanvas = replaceWithCanvas('showcase');
-rcanvas = replaceWithCanvas('showcase2');
-
-lctx = lcanvas.getContext('2d');
-rctx = rcanvas.getContext('2d');
-
-var timer = window.setInterval(fizzle, 50);
-
-function fizzle() {
-    if (load_count != 2) {
-        console.warn("Data not loaded yet!");
+function replaceWithCanvas(imageId, onLoadCallback) {
+    const image = document.getElementById(imageId);
+    if (!image) {
+        console.error(`Image element with ID "${imageId}" not found.`);
         return;
     }
 
-    var ldat = lctx.getImageData(0, 0, WIDTH, HEIGHT);
-    var rdat = rctx.getImageData(0, 0, WIDTH, HEIGHT);
-
-    var L = ldat.data,
-        R = rdat.data;
-    var o = void 0;
-
-    // Do 2000 pixels at a time so we don't hold the browser UI thread up too much
-    for (var i = 0; i < 2000; i++) {
-
-        // Here, we're just using bit-meddler to generate a buffer offset
-        // but you can easily get a pair of X & Y pixel coordinates with some
-        // modulus division
-        o = bm.next();
-
-        if (o == null) break;
-
-        o *= BIT_DEPTH; // AGBR; = 4 bytes
-
-        // Swap the pixels ES6 style
-        var _ref = [R[o + 0], L[o + 0]];
-        L[o + 0] = _ref[0];
-        R[o + 0] = _ref[1];
-        var _ref2 = [R[o + 1], L[o + 1]];
-        L[o + 1] = _ref2[0];
-        R[o + 1] = _ref2[1];
-        var _ref3 = [R[o + 2], L[o + 2]];
-        L[o + 2] = _ref3[0];
-        R[o + 2] = _ref3[1];
-        var _ref4 = [R[o + 3], L[o + 3]];
-        L[o + 3] = _ref4[0];
-        R[o + 3] = _ref4[1];
-    }
-
-    lctx.putImageData(ldat, 0, 0);
-    rctx.putImageData(rdat, 0, 0);
-
-    if (o == null) {
-        window.clearInterval(timer);
-
-        window.setTimeout(function () {
-            bm.reset(); // reset bit-meddler for another pass!
-            timer = window.setInterval(fizzle, 50);
-        }, 2000);
-    }
-}
-
-function replaceWithCanvas(imageId) {
-    const image = document.getElementById(imageId);
-
     const canvas = document.createElement('canvas');
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
-
     const ctx = canvas.getContext('2d');
     let img1 = new Image();
-
-    // Function to execute once the image is loaded
-    const onImageLoad = () => {
+    img1.onload = () => {
         load_count++;
+        canvas.width = img1.naturalWidth;
+        canvas.height = img1.naturalHeight;
+        canvas.id = `${imageId}-canvas`;
         ctx.drawImage(img1, 0, 0);
-        image.parentNode.replaceChild(canvas, image);
+        if (image.parentNode) {
+            image.parentNode.replaceChild(canvas, image);
+        }
+        onLoadCallback(canvas);
     };
-
-    img1.onload = onImageLoad;
     img1.src = image.src;
-    if (img1.complete) onImageLoad();
-
-    return canvas;
+    if (img1.complete) img1.onload();
 }
+
+function initBitMeddler(width, height) {
+    return new bitmeddler(width * height);
+}
+
+function fizzle(ctx0, ctx1, width, height, bm) {
+    var ldat = ctx0.getImageData(0, 0, width, height);
+    var rdat = ctx1.getImageData(0, 0, width, height);
+    var L = ldat.data, R = rdat.data;
+    var o;
+
+    for (var i = 0; i < fizzleRate; i++) {
+        o = bm.next();
+        if (o == null) break;
+        o *= BIT_DEPTH;
+
+        [L[o + 0], R[o + 0]] = [R[o + 0], L[o + 0]];
+        [L[o + 1], R[o + 1]] = [R[o + 1], L[o + 1]];
+        [L[o + 2], R[o + 2]] = [R[o + 2], L[o + 2]];
+        [L[o + 3], R[o + 3]] = [R[o + 3], L[o + 3]];
+    }
+
+    ctx0.putImageData(ldat, 0, 0);
+    ctx1.putImageData(rdat, 0, 0);
+
+    if (o == null) {
+        console.log("Image manipulation completed.");
+        return true; // Signal completion
+    }
+    return false; // Signal ongoing manipulation
+}
+
+function startFizzle(canvas0, canvas1) {
+    const bm = initBitMeddler(canvas0.width, canvas0.height);
+    var timer = window.setInterval(() => {
+        const done = fizzle(canvas0.getContext('2d'), canvas1.getContext('2d'), canvas0.width, canvas1.height, bm);
+        if (done) {
+            window.clearInterval(timer);
+            window.setTimeout(() => {
+                bm.reset();
+                startFizzle(canvas0, canvas1); // Restart the effect
+            }, resetTimeout);
+        }
+    }, fizzleInterval);
+}
+
+// Load and replace images, then start fizzle effect
+replaceWithCanvas('showcase', (canvas0) => {
+    replaceWithCanvas('showcase2', (canvas1) => {
+        if (load_count >= 2) startFizzle(canvas0, canvas1);
+    });
+});
