@@ -1,117 +1,83 @@
 import { bitmeddler } from './bitmeddler.js';
-import { _ } from 'cute-con';
 
-const bitMeddlerImage = {
-    replaceWithCanvas(imageId)
-    {
-        const image = document.getElementById(imageId);
-        if (!image) {
-            console.error(`Image element with ID "${imageId}" not found.`);
-            return null;
-        }
+var WIDTH     = 480,
+    HEIGHT    = 360,
+    BIT_DEPTH = 4; // 32-bit
 
-        const canvas = document.createElement('canvas');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        canvas.id = `${imageId}-canvas`;
-        const context2D = _(canvas.getContext('2d'));
-        context2D.drawImage(image, 0, 0);
-        image.parentNode.replaceChild(canvas, image);
+var bm = new bitmeddler(WIDTH * HEIGHT);
 
-        // const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        // bitMeddlerEffects[effect](imageData);
-        // ctx.putImageData(imageData, 0, 0);
+var load_count = 0; // hacky, I know, shut up its only a demo gawd
 
-        return canvas;
-    },
+var lctx = document.getElementById('cleft').getContext('2d');
+var rctx = document.getElementById('cright').getContext('2d');
 
-    scramblePixels(canvas, options = {})
-    {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixelData = imageData.data;
-        const meddle = _(new bitmeddler(pixelData.length));
+load_img_into_canvas(lctx, './img/homer_car_1_480px.jpg');
+load_img_into_canvas(rctx, './img/homer_car_2_480px.jpg');
 
-        const animationLoop = () =>
+var timer = window.setInterval(fizzle, 50);
+
+function fizzle()
+{
+    if (load_count != 2) {
+        console.warn("Data not loaded yet!");
+        return;
+    }
+
+    var ldat = lctx.getImageData(0, 0, WIDTH, HEIGHT);
+    var rdat = rctx.getImageData(0, 0, WIDTH, HEIGHT);
+
+    var L = ldat.data,
+        R = rdat.data;
+    var o = void 0;
+
+    // Do 2000 pixels at a time so we don't hold the browser UI thread up too much
+    for (var i = 0; i < 2000; i++) {
+
+        // Here, we're just using bit-meddler to generate a buffer offset
+        // but you can easily get a pair of X & Y pixel coordinates with some
+        // modulus division
+        o = bm.next();
+
+        if (o == null) break;
+
+        o *= BIT_DEPTH; // AGBR; = 4 bytes
+
+        // Swap the pixels ES6 style
+        var _ref = [R[o + 0], L[o + 0]];
+        L[o + 0] = _ref[0];
+        R[o + 0] = _ref[1];
+        var _ref2 = [R[o + 1], L[o + 1]];
+        L[o + 1] = _ref2[0];
+        R[o + 1] = _ref2[1];
+        var _ref3 = [R[o + 2], L[o + 2]];
+        L[o + 2] = _ref3[0];
+        R[o + 2] = _ref3[1];
+        var _ref4 = [R[o + 3], L[o + 3]];
+        L[o + 3] = _ref4[0];
+        R[o + 3] = _ref4[1];
+    }
+
+    lctx.putImageData(ldat, 0, 0);
+    rctx.putImageData(rdat, 0, 0);
+
+    if (o == null) {
+        window.clearInterval(timer);
+
+        window.setTimeout(function ()
         {
-            const scrambledIndexes = _(meddle.next());
+            bm.reset(); // reset bit-meddler for another pass!
+            timer = window.setInterval(fizzle, 50);
+        }, 2000);
+    }
+}
 
-            for (let i = 0; i < pixelData.length; i += 4) {
-                const offset = scrambledIndexes * 4;
-                pixelData[i] = pixelData[offset];
-                pixelData[i + 1] = pixelData[offset + 1];
-                pixelData[i + 2] = pixelData[offset + 2];
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-
-            if (scrambledIndexes !== null && !options.stopAnimation) {
-                requestAnimationFrame(animationLoop);
-            }
-        };
-
-        animationLoop();
-    },
-
-    glitchEffect(canvas, options = {})
+function load_img_into_canvas(ctx, file)
+{
+    var img1 = new Image();
+    img1.onload = function ()
     {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixelData = imageData.data;
-        const meddle = new bitmeddler(pixelData.length, options.seed);
-
-        const animationLoop = () =>
-        {
-            for (let i = 0; i < pixelData.length; i += 4) {
-                const offset = meddle.next() * 4;
-                const r = pixelData[offset];
-                const g = pixelData[offset + 1];
-                const b = pixelData[offset + 2];
-
-                pixelData[i] = r;
-                pixelData[i + 1] = g;
-                pixelData[i + 2] = b;
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-
-            if (meddle.next() !== null && !options.stopAnimation) {
-                requestAnimationFrame(animationLoop);
-            }
-        };
-
-        animationLoop();
-    },
-
-    // Add more image manipulation functions here
-
-    stopAnimation(canvas)
-    {
-        canvas.stopAnimation = true;
-    },
-
-    resetAnimation(canvas)
-    {
-        canvas.stopAnimation = false;
-    },
-
-};
-
-// Replace an image with a canvas
-const canvas = bitMeddlerImage.replaceWithCanvas('showcase');
-//const canvas2 = bitMeddlerImage.replaceWithCanvas('showcase2');
-//const canvas3 = bitMeddlerImage.replaceWithCanvas('showcase3');
-//const canvas4 = bitMeddlerImage.replaceWithCanvas('showcase4');
-
-// Apply the scramble pixels effect to the canvas
-//bitMeddlerImage.scramblePixels(canvas);
-
-// Apply the glitch effect to the canvas
-//bitMeddlerImage.glitchEffect(canvas2);
-
-// Stop the animation on the canvas
-//bitMeddlerImage.stopAnimation(canvas3);
-
-// Reset the animation on the canvas
-//bitMeddlerImage.resetAnimation(canvas4);
-
+        ctx.drawImage(img1, 0, 0);
+        load_count++;
+    };
+    img1.src = file;
+}

@@ -2,13 +2,10 @@
   "name": "cute-noise",
   "version": "0.0.1",
   "description": "Experimental.",
-  "source": "src/test.js",
-  "main": "dist/bundle.js",
-  "module": "dist/bundle.js",
-  "browser": "dist/bundle.js",
+  "main": "dist/uniport.js",
+  "browser": "dist/uniport.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "start": "webpack serve --open --mode development"
+    "build": "uniport"
   },
   "files": [
     "src",
@@ -21,7 +18,8 @@
   "funding": "https://bit.ly/incessant-vibration",
   "keywords": [],
   "dependencies": {
-    "cute-con": "latest"
+    "cute-con": "latest",
+    "cute-html": "^1.0.1"
   },
   "devDependencies": {
     "uniport": "latest"
