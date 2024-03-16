@@ -18,10 +18,10 @@
   "funding": "https://bit.ly/incessant-vibration",
   "keywords": [],
   "dependencies": {
-    "cute-con": "latest",
-    "cute-html": "^1.0.1"
+    "cute-con": "~1.1",
+    "cute-html": "~1.0"
   },
   "devDependencies": {
-    "uniport": "latest"
+    "uniport": "~1.1"
   }
 }
