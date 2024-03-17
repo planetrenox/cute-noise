@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/piercer-error"></script>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Flow+Rounded&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Linefont&family=Redacted&family=Rubik+Marker+Hatch&family=Sixtyfour&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Freckle+Face&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Codystar:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One+SC&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+  <p class="txx" style="font-size: 35px; font-family: 'Flow Rounded'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'Sixtyfour'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'Linefont'">This is text in a p tag but our function should work with any text inside any tag with this class</p>  <p class="txx" style="font-size: 35px; font-family: 'Redacted'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'Rubik Marker Hatch'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'Freckle Face'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'Bowlby One SC'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+  <p class="txx" style="font-size: 35px; font-family: 'IBM Plex Sans'">This is text in a p tag but our function should work with any text inside any tag with this class</p>
+</body>
+<script>
+  var applyN = function applyN1(canvas, textPixels, edgePixels)
+  {
+    const ctx = canvas.getContext('2d');
+    
+    // Retrieve the image data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const ceiling = 255;
+    
+    // Apply a destructive effect to text pixels
+    textPixels.forEach(i => {
+      data[i] = Math.random() * ceiling;     // red
+      data[i + 1] = Math.random() * ceiling; // green
+      data[i + 2] = Math.random() * ceiling; // blue
+    });
+    
+    // Apply a destructive effect to edge pixels
+    edgePixels.forEach(i =>
+    {
+      data[i] = Math.random() * ceiling;     // red
+      data[i + 1] = Math.random() * ceiling; // green
+      data[i + 2] = Math.random() * ceiling; // blue
+    });
+    
+    // Update the canvas with the modified pixels
+    ctx.putImageData(imageData, 0, 0);
+  };
+</script>
+<script>
+  var textPixels = [];
+  var edgePixels = [];
+  
+  var detect = function detect1(canvas)
+  {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Your logic to detect text pixels and edge pixels
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 0 && data[i + 3] < 255) {
+        edgePixels.push(i);
+      }
+      else if (data[i + 3] === 255) {
+        textPixels.push(i);
+      }
+    }
+  };
+</script>
+<script>
+  function convertTextToCanvas(textElement)
+  {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var style = window.getComputedStyle(textElement);
+    var fontSize = style.getPropertyValue('font-size');
+    var fontFamily = style.getPropertyValue('font-family');
+    
+    ctx.font = `${fontSize} ${fontFamily}`;
+    
+    // Set the maximum width and line height for text wrapping
+    var maxWidth = window.innerWidth - 20; // Adjust the value as needed
+    var lineHeight = parseInt(fontSize, 10);
+    
+    // Split the text into individual words
+    var words = textElement.textContent.split(' ');
+    var line = '';
+    var y = 0;
+    
+    // Iterate over each word and wrap the text
+    for (var i = 0; i < words.length; i++) {
+      var testLine = line + words[i] + ' ';
+      var metrics = ctx.measureText(testLine);
+      var testWidth = metrics.width;
+      if (testWidth > maxWidth && i > 0) {
+        ctx.fillText(line, 0, y);
+        line = words[i] + ' ';
+        y += lineHeight;
+      }
+      else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, 0, y);
+    
+    // Set the canvas dimensions based on the wrapped text
+    canvas.width = maxWidth;
+    canvas.height = y + lineHeight;
+    
+    ctx.font = `${fontSize} ${fontFamily}`;
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = style.getPropertyValue('color');
+    
+    // Redraw the wrapped text on the canvas
+    y = 0;
+    line = '';
+    for (var i = 0; i < words.length; i++) {
+      var testLine = line + words[i] + ' ';
+      var metrics = ctx.measureText(testLine);
+      var testWidth = metrics.width;
+      if (testWidth > maxWidth && i > 0) {
+        ctx.fillText(line, 0, y);
+        line = words[i] + ' ';
+        y += lineHeight;
+      }
+      else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, 0, y);
+    
+    // Now we have the text on the canvas, we can detect and store the text pixels
+    detect(canvas);
+    console.log(textPixels, edgePixels);
+    
+    // Then apply the destructive effect to those pixels
+    applyN(canvas, textPixels, edgePixels);
+    
+    return canvas;
+  }
+  
+  function replaceTextWithCanvas()
+  {
+    var textElements = document.querySelectorAll('.txx');
+    textElements.forEach(function (element)
+    {
+      var canvas = convertTextToCanvas(element);
+      element.parentNode.replaceChild(canvas, element);
+    });
+  }
+  
+  function loopDestructiveEffect()
+  {
+    var canvasElements = document.querySelectorAll('canvas');
+    canvasElements.forEach(function (canvas)
+    {
+      applyN(canvas, textPixels, edgePixels);
+    });
+    requestAnimationFrame(loopDestructiveEffect);
+  }
+  
+  replaceTextWithCanvas();
+  loopDestructiveEffect();
+</script>
